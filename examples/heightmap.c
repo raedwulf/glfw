@@ -33,9 +33,41 @@
 #include "getopt.h"
 
 #include <GL/glfw3.h>
+#if defined(__APPLE__) && defined(__MACH__)
+#include <OpenGL/gl3.h>
+#else
 #include <GL/glext.h>
+#endif
 
 /* OpenGL function pointers */
+
+#if defined(__APPLE__) && defined(__MACH__)
+#define pglGenBuffers              glGenBuffers
+#define pglGenVertexArrays         glGenVertexArrays
+#define pglDeleteVertexArrays      glDeleteVertexArrays
+#define pglCreateShader            glCreateShader
+#define pglShaderSource            glShaderSource
+#define pglCompileShader           glCompileShader
+#define pglGetShaderiv             glGetShaderiv
+#define pglGetShaderInfoLog        glGetShaderInfoLog
+#define pglDeleteShader            glDeleteShader
+#define pglCreateProgram           glCreateProgram
+#define pglAttachShader            glAttachShader
+#define pglLinkProgram             glLinkProgram
+#define pglUseProgram              glUseProgram
+#define pglGetProgramiv            glGetProgramiv
+#define pglGetProgramInfoLog       glGetProgramInfoLog
+#define pglDeleteProgram           glDeleteProgram
+#define pglGetUniformLocation      glGetUniformLocation
+#define pglUniformMatrix4fv        glUniformMatrix4fv
+#define pglGetAttribLocation       glGetAttribLocation
+#define pglBindVertexArray         glBindVertexArray
+#define pglBufferData              glBufferData
+#define pglBindBuffer              glBindBuffer
+#define pglBufferSubData           glBufferSubData
+#define pglEnableVertexAttribArray glEnableVertexAttribArray
+#define pglVertexAttribPointer     glVertexAttribPointer
+#else
 static PFNGLGENBUFFERSPROC              pglGenBuffers = NULL;
 static PFNGLGENVERTEXARRAYSPROC         pglGenVertexArrays = NULL;
 static PFNGLDELETEVERTEXARRAYSPROC      pglDeleteVertexArrays = NULL;
@@ -61,6 +93,7 @@ static PFNGLBINDBUFFERPROC              pglBindBuffer = NULL;
 static PFNGLBUFFERSUBDATAPROC           pglBufferSubData = NULL;
 static PFNGLENABLEVERTEXATTRIBARRAYPROC pglEnableVertexAttribArray = NULL;
 static PFNGLVERTEXATTRIBPOINTERPROC     pglVertexAttribPointer = NULL;
+#endif
 
 /* Map height updates */
 #define MAX_CIRCLE_SIZE (5.0f)
@@ -93,6 +126,7 @@ static PFNGLVERTEXATTRIBPOINTERPROC     pglVertexAttribPointer = NULL;
 static GLboolean init_opengl(void)
 {
     GLboolean status = GL_TRUE;
+#if !(defined(__APPLE__) && defined(__MACH__))
     RESOLVE_GL_FCN(PFNGLCREATESHADERPROC, pglCreateShader, "glCreateShader");
     RESOLVE_GL_FCN(PFNGLSHADERSOURCEPROC, pglShaderSource, "glShaderSource");
     RESOLVE_GL_FCN(PFNGLCOMPILESHADERPROC, pglCompileShader, "glCompileShader");
@@ -118,6 +152,7 @@ static GLboolean init_opengl(void)
     RESOLVE_GL_FCN(PFNGLBUFFERSUBDATAPROC, pglBufferSubData, "glBufferSubData");
     RESOLVE_GL_FCN(PFNGLENABLEVERTEXATTRIBARRAYPROC, pglEnableVertexAttribArray, "glEnableVertexAttribArray");
     RESOLVE_GL_FCN(PFNGLVERTEXATTRIBPOINTERPROC, pglVertexAttribPointer, "glVertexAttribPointer");
+#endif
     return status;
 }
 /**********************************************************************
@@ -139,10 +174,10 @@ static const char* default_vertex_shader =
 
 static const char* default_fragment_shader =
 "#version 150\n"
-"out vec4 gl_FragColor;\n"
+"out vec4 _gl_FragColor;\n"
 "void main()\n"
 "{\n"
-"    gl_FragColor = vec4(0.2, 1.0, 0.2, 1.0); \n"
+"    _gl_FragColor = vec4(0.2, 1.0, 0.2, 1.0); \n"
 "}\n";
 
 /**********************************************************************
@@ -585,7 +620,7 @@ int main(int argc, char** argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_FALSE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     window = glfwCreateWindow(800, 600, GLFW_WINDOWED, "GLFW OpenGL3 Heightmap demo", NULL);
     if (! window )
